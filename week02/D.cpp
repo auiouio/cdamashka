@@ -5,9 +5,10 @@ using namespace std;
 int recursive_power(int base, int power) {
     int res = 1;
     int i = 0;
-    while (i < power) {
-        res *= base;
-        i ++;
+    if (power == 0) {
+        res = 1;
+    } else {
+        res = base * recursive_power(base, power - 1);
     }
     return res;
 }
