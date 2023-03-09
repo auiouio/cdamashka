@@ -20,6 +20,6 @@ void palindrom(int n) {
 int main() {
     int n = 0;
     cin >> n;
-    palindrom(n);
+    is_palindrom(n);
     return 0;
 }
