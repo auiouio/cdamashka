@@ -21,5 +21,6 @@ int main() {
     for (int i = 0; i < 10; ++i) {
         cout << ptr[i] << " ";
     }
+    delete [] ptr;
     return 0;
 }
