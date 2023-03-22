@@ -2,10 +2,6 @@
 
 using namespace std;
 
-void input_array(int* ptr, size_t N);
-void reverse(int* ptr, size_t N);
-void print(const int* ptr, size_t N);
-
 void swap(int& lha, int& rha) {
     int tmp = lha;
     lha = rha;
@@ -38,11 +34,10 @@ void print(const int* ptr, size_t N) {
 
 int main() {
     int N = 0;
-    //int* ptr = nullptr;
+    int* ptr = nullptr;
     cin >> N;
-    int* ptr = new int[N];
+    ptr = new int[N];
     input_array(ptr, N);
-    print(ptr, N);
     reverse(ptr, N);
     print(ptr, N);
     delete [] ptr;
