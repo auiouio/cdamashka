@@ -9,7 +9,7 @@ void free_memory(int*);
 
 bool reserve_memory(size_t N, int *&dst) {
     if (dst = nullptr) {
-        int* dst = new int[10];
+        int* dst = new int[N];
         return true;
     } else {
         return false;
