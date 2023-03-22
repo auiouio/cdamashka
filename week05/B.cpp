@@ -16,7 +16,7 @@ int main() {
     }
     cout << endl;
     for (int i = 0; i < 10; i+=2) {
-        ptr[i] = i*i;
+        ptr[i] *= ptr[i];
     }
     for (int i = 0; i < 10; ++i) {
         cout << ptr[i] << " ";
