@@ -49,7 +49,19 @@ void shaker_sort(unsigned array[], unsigned const begin_idx, unsigned const end_
     }
 }
 
-
+int test(unsigned array[]) {
+    //forward_step(array, 0, N-1);
+    //backward_step(array, 0, N);
+    shaker_sort(array, 0, N);
+    for (int i = 1; i < N; i++) {
+        if (array[i-1] > array[i]) {
+            cout << "тест не прошел ";
+            break; 
+        }
+    }
+    cout << "тест прошел" << endl;
+    return 0;
+}
 
 int main() {
     unsigned seed = 1001;
@@ -63,6 +75,7 @@ int main() {
     cout << endl;
 
     shaker_sort(array, 0, N-1);
+    test(array);
 
     for (int i = 0; i < N-1; i++) {
         cout << array[i] << ' ';
