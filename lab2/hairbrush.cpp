@@ -1,79 +1,96 @@
 #include <iostream>
-#include <random>
+#include <random> 
 #include <fstream>
 #include <chrono>
 
 using namespace std;
 
-void swap(int& lha, int& rha) {
-    int tmp = lha;
-    lha = rha;
-    rha = tmp;
-}
-
-void hb(int* ptr, size_t N) {
-    for (int i = 0; i < N; i ++) {
-        if (ptr[i] > ptr[i+N/4]) {
-            swap(ptr[i], ptr[i+1]);
-        }
-    }
-}
-
-void bubble_sort(int* ptr, size_t N) {
-    int i = 0;
-    while (i < N) {
-        if (i == 0)
-            i++;
-        if (ptr[i] >= ptr[i - 1])
-            i++;
-        else {
-            swap(ptr[i], ptr[i - 1]);
-            i--;
-        }
-    }
-    return;
-}
-
-void randomize(int* ptr, size_t N, int seed) {
-    std::default_random_engine rng(seed);
-    std::uniform_int_distribution<unsigned> dstr(0, N);
+void randomize(int arr[], size_t N, unsigned seed) {
+    default_random_engine rng(seed);
+    uniform_int_distribution<unsigned> dstr(0, N);
     for (int i = 0; i < N; i++)
     {
-        ptr[i] = dstr(rng);
+        arr[i] = dstr(rng);
         i++;
     }
 }
 
-void create_outfile(double* ptr, size_t N, int step) {
-    std::ofstream out("linsearch_extratime.csv", std::ios::out);
-    for (int i = 0; i < N; ++i) {
+int iter_comb(int arr[], size_t N, int step) {
+    int i = 0;
+    int j = step;
+    int swap;
+    int swapCount = 0;
+    
+    while (j < N) {
+        if (arr[i] > arr[j]) {
+            swap = arr[i];
+            arr[i] = arr[j];
+            arr[j] = swap;
+            swapCount++;
+        }
+        i++;
+        j++;
+    }
+    
+    return swapCount;
+}
+
+int combSort(int arr[], size_t N) {
+    int totalSwaps = 0;
+    int iterSwaps = 0;
+    
+    for (int step = N / 2; step > 0; step /= 2) {
+        iterSwaps = iter_comb(arr, N, step);
+        totalSwaps += iterSwaps;
+    }
+
+    while (iterSwaps > 0) {
+        iterSwaps = iter_comb(arr, N, 1);
+        totalSwaps += iterSwaps;
+    }
+
+    return totalSwaps;
+}
+
+void create_outfile(int arr[], int brr[], int srr[]) {
+    std::ofstream out("sort.csv", std::ios::out);
+    for (int i = 0; i < srr[i]; ++i) {
         if (out.is_open()) {
-            out << step * (i + 1) << "," << ptr[i] << endl;
+            out << srr[i] << "," << arr[i] << "," << brr[i] << endl;
         }
     }
     out.close();
 }
 
 int main() {
-    int* data = nullptr;  // массив данных
-    double* ans = nullptr;  // массив усредненных времен для каждого эксперимента
-    int time1 = 0;
-    for (int N = 100; N < 100000; N += 100) {
-        ans = new double[1000];
-        for (int repeats = 0; repeats < 100; ++repeats) {
-            data = new int[N];
-            randomize(data, N, 1001); 
-            hb(data, N);
-            auto begin = std::chrono::steady_clock::now();
-            bubble_sort(data, N);
-            auto end = std::chrono::steady_clock::now();
-            auto time_span = std::chrono::duration_cast<std::chrono::seconds>(end - begin);
-            time1 += time_span.count();
-            delete[] data;
-        }
-        *(ans+ N/100 - 1) = time1;
+    int minN = 100;
+    int maxN = 10000;
+    int Nstep = 100;
+    int nExperiments = (maxN - minN) / Nstep + 1;
+    cout << "Number of experiments: " << nExperiments << endl;
+    
+    int Ns[nExperiments];
+    int times[nExperiments];
+    int nSwaps[nExperiments];
+    
+
+    for (int i = 0; i < nExperiments; i++) {
+        int N = i * Nstep + minN;
+        std::cout << "N: " << N << std::endl;
+        int time1 = 0;
+        Ns[i] = N;
+        
+        int arr[N];
+        randomize(arr, N, 666+N);
+        auto begin = std::chrono::steady_clock::now();
+        combSort(arr, N);
+        auto end = std::chrono::steady_clock::now();
+        auto time_span = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
+        time1 += time_span.count();
+        nSwaps[i] = combSort(arr, N);
+        times[i] = time1;
     }
-    create_outfile(ans, 999, 100);
-    delete [] ans;
+    create_outfile(times, nSwaps, Ns);
+    
     return 0;
 }
