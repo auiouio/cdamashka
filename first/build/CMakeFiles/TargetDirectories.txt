@@ -1,2 +1,0 @@
-C:/Users/auiod/cdamashka/cdamashka/first/build/CMakeFiles/edit_cache.dir
-C:/Users/auiod/cdamashka/cdamashka/first/build/CMakeFiles/rebuild_cache.dir

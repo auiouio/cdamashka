@@ -7,7 +7,9 @@
 
 
 template <typename T>
-int Partition(std::vector<T>& a, const Comparator<T>& comp, int start, int end) {
+class MyClass {
+    public:
+    int Partition(std::vector<T>& a, const Comparator<T>& comp, int start, int end) {
     T pivot = a[end];
     int index = start;
     for (int i = start; comp(i, end); i++) {
@@ -18,42 +20,46 @@ int Partition(std::vector<T>& a, const Comparator<T>& comp, int start, int end) 
     }
     std::swap(a[index], a[end]);
     return index;
-}
+    };
+    void QuickSort(std::vector<T>& a, const Comparator<T>& comp, int start, int end) {
+        if (start >= end) {
+            return;
+        }
 
-template <typename T>
-void QuickSort(std::vector<T>& a, const Comparator<T>& comp, int start, int end) {
-    if (start >= end) {
-        return;
-    }
+        int pivot = Partition(a, comp, start, end);
 
-    int pivot = Partition(a, comp, start, end);
+        QuickSort(a, comp, start, pivot - 1);
 
-    QuickSort(a, comp, start, pivot - 1);
-
-    QuickSort(a, comp, pivot + 1, end);
-}
-
-template <typename T>
-void Test(std::vector<T>& a, const Comparator<T>& comp) {
-    int end = a.size();
-    for (int j = 0; j < end; j++) {
-        for (int i = j; i < end; i++) {
-            if (comp(a[i], a[j])) {
-                std::cout << "Тест не прошел" << std::endl;
-                return;
+        QuickSort(a, comp, pivot + 1, end);
+    };
+    void Test(std::vector<T>& a, const Comparator<T>& comp) {
+        int end = a.size();
+        for (int j = 0; j < end; j++) {
+            for (int i = j; i < end; i++) {
+                if (comp(a[i], a[j])) {
+                    std::cout << "Тест не прошел" << std::endl;
+                    return;
+                }
             }
         }
-    }
-    std::cout << "Тест пройден" << std::endl;
-}
+        std::cout << "Тест пройден" << std::endl;
+    };
+    void GetVec(std::vector<T> a) {
+        for (const auto& element : a) {
+            std::cout << element << " ";
+        }
+        std::cout << std::endl;
+    };
+    std::vector<int> CreateVec(int N) {
+        return std::vector<int>(N);
+    };
+};
 
-std::vector<int> CreateVec(int N) {
-    return std::vector<int> (N, 0);
-}
 
 int main() {
-    std::vector<int> a = CreateVec(10);
-
+    MyClass<int> func;
+    std::vector<int> a = func.CreateVec(10);
+    std::vector<int> b;
 
     IntComparator intComparator;
 
@@ -64,20 +70,15 @@ int main() {
     for (unsigned counter = 100; counter != 0; --counter) {
         a[dstr(rng)] = std::rand() % 100;
     }
-
     std::cout << "Vector elements: ";
-    for (const auto& element : a) {
-        std::cout << element << " ";
-    }
-    std::cout << std::endl;
-
-    QuickSort(a, intComparator, 0, a.size() - 1);
+    func.GetVec(a);
+    func.QuickSort(a, intComparator, 0, a.size() - 1);
 
     std::cout << "Sorted vector: ";
-    for (const auto& element : a) {
-        std::cout << element << " ";
-    }
+    func.GetVec(a);
 
-    Test(a, intComparator); 
+    func.Test(a, intComparator); 
+    std::cout << "Empthy vector: ";
+    func.GetVec(b);
     return 0;
 }
