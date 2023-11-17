@@ -2,18 +2,9 @@
 #include <vector>
 #include <algorithm>
 #include <random>
+#include "C:\Users\auiod\cdamashka\cdamashka\first\include\my_library.h"
 
 
-template <typename T>
-struct Comparator {
-    virtual bool operator()(T const&, T const&) const = 0;
-};
-
-struct IntComparator final : Comparator<int> {
-    bool operator()(int const& lha, int const& rha) const override {
-        return lha < rha;
-    }
-};
 
 template <typename T>
 int Partition(std::vector<T>& a, const Comparator<T>& comp, int start, int end) {
@@ -49,13 +40,20 @@ void Test(std::vector<T>& a, const Comparator<T>& comp) {
         for (int i = j; i < end; i++) {
             if (comp(a[i], a[j])) {
                 std::cout << "Тест не прошел" << std::endl;
+                return;
             }
         }
     }
+    std::cout << "Тест пройден" << std::endl;
+}
+
+std::vector<int> CreateVec(int N) {
+    return std::vector<int> (N, 0);
 }
 
 int main() {
-    std::vector<int> a(10, 0);
+    std::vector<int> a = CreateVec(10);
+
 
     IntComparator intComparator;
 
@@ -80,5 +78,6 @@ int main() {
         std::cout << element << " ";
     }
 
+    Test(a, intComparator); 
     return 0;
 }
