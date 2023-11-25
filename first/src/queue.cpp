@@ -85,9 +85,6 @@ int main() {
         std::cout << priorityQueue.Poll() << std::endl;
     }
 
-    PriorityQueue<std::string, int, IntComparator> priorityQueue_em;
-    if (priorityQueue_em.IsEmpty()) {
-        std::cout<< "Очередь пустая" << std::endl;
-    };
+
     return 0;
 }
