@@ -95,6 +95,8 @@ private:
         return flatIndex;
     }
 
+
+
 public:
     using value_type = T;
     using size_type = unsigned;
@@ -150,38 +152,28 @@ public:
     }
 
     // Оператор для доступа к слою
-    NDGrid<T, dim - 1> operator[](size_type index) {
+    T* operator[](size_type index) const {
         assert(index < Dimensions[dim - 1] && "Index out of bounds");
-        size_type sliceSize = Flattered / Dimensions[dim - 1];
-        T* sliceData = data + index * sliceSize;
-        return NDGrid<T, dim - 1>(sliceData, Dimensions.data());
-    }
 
-    // Оператор для доступа к слою
-    NDGrid<T, dim - 1> operator[](size_type index) const {
-        assert(index < Dimensions[dim - 1] && "Index out of bounds");
         size_type sliceSize = Flattered / Dimensions[dim - 1];
-        T* sliceData = data + index * sliceSize;
-        return NDGrid<T, dim - 1>(sliceData, Dimensions.data());
-    }
+        T* sliceData = new T[sliceSize];
+        std::fill_n(sliceData, sliceSize, data[index * sliceSize]);
 
+        return sliceData;
+    }
 
     // Оператор присваивания
-
-    NDGrid& operator=(const T *other) {
-        if (this != &other) { // защита от самоприсваивания
-        delete[] data; // освобождение старых данных
-
-        // копирование размеров
-        Dimensions = other.Dimensions;
-        Flattered = other.Flattered;
+    NDGrid& operator=(const T* other) {
+        // Здесь следует учесть, что другой массив other должен быть той же размерности
+        // и соответствовать ожидаемым размерам исходного объекта.
 
         // копирование данных
-        data = new T[Flattered];
-        std::copy(other.data, other.data + Flattered, data);
-        }
+        std::copy(other, other + Flattered, data);
+
         return *this;
     }
+
+
 
 
     ~NDGrid() {
