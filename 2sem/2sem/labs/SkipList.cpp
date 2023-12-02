@@ -89,6 +89,27 @@ class SkipList {
         return *this;
     }
 
+    SkipList(SkipList&& other){
+        if (this != &other) {
+            clear();
+            // Копируем узлы из другого объекта
+            head = copyNode(other.head, maxLevels - 1);
+
+            // Копируем остальные данные
+            probability = other.probability;
+            maxLevels = other.maxLevels;
+
+            
+            // Освобождаем ресурсы текущего объекта, если необходимо
+            // Например, вызываем clear() или удаляем динамически выделенные узлы
+
+            // Перемещаем ресурсы из other в текущий объект
+            // Например, если у вас есть динамически выделенные узлы, переместите указатели
+            // и обнулите указатели в other, чтобы избежать освобождения ресурсов дважды
+        }
+        return *this;
+    }
+
     bool isEmpty() const {
         return head == nullptr;
     };

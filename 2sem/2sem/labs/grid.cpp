@@ -156,11 +156,9 @@ public:
         assert(index < Dimensions[dim - 1] && "Index out of bounds");
 
         size_type sliceSize = Flattered / Dimensions[dim - 1];
-        T* sliceData = new T[sliceSize];
-        std::fill_n(sliceData, sliceSize, data[index * sliceSize]);
-
-        return sliceData;
+        return &data[index * sliceSize];
     }
+
 
     // Оператор присваивания
     NDGrid& operator=(const T* other) {
