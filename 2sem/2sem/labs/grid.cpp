@@ -73,6 +73,41 @@ public:
     size_type get_x_size() const { return x_size; }
 };
 
+template <class T, size_t CurrentDim, size_t ...OtherDims>
+struct Slice1 {
+    T *currernt_data_start;
+    Slice(T* data): currernt_data_start(data) {
+    }
+    Slice& operator[](size_t currentDimIdx) {
+        if (currentDimIdx >= CurrentDim) {
+            throw "Too large index!";
+        }
+        Slice<T,...OtherDims>(
+            currernt_data_start + currentDimIdx*(...*OtherDims)
+            );
+    }
+};
+template <class T, size_t CurrentDim>
+struct Slice1 {
+    T *currernt_data_start;
+    Slice(T* data): currernt_data_start(data) {
+    }
+    T& operator[](size_t currentDimIdx) {
+        if (currentDimIdx >= CurrentDim) {
+            throw "Too large index!";
+        }
+        currernt_data_start[currentDimIdx];
+    }
+};
+
+template <class T, size_t CurrentDim>
+struct Slice {
+};
+template <class T>
+struct Slice<T,1> {
+};
+    
+
 
 template <typename T, int dim>
 class NDGrid {
@@ -104,6 +139,8 @@ public:
     T *data;
     size_type Flattered;
     std::vector<size_type> Dimensions;
+
+    
 
     NDGrid(T *data, size_type *dimensions)
         : data(data), Dimensions(dimensions), Flattered(1) {
@@ -152,18 +189,20 @@ public:
     }
 
     // Оператор для доступа к слою
+    /*
     T* operator[](size_type index) const {
         assert(index < Dimensions[dim - 1] && "Index out of bounds");
 
         size_type sliceSize = Flattered / Dimensions[dim - 1];
         return &data[index * sliceSize];
+    }//*/
+    T* operator[](size_type index) const {
+        return Slice(data, )
     }
 
 
     // Оператор присваивания
     NDGrid& operator=(const T* other) {
-        // Здесь следует учесть, что другой массив other должен быть той же размерности
-        // и соответствовать ожидаемым размерам исходного объекта.
 
         // копирование данных
         std::copy(other, other + Flattered, data);
