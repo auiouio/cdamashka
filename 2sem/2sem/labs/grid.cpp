@@ -119,7 +119,9 @@ struct Slice {
         if (currentDimIdx >= dimension_sizes_[CurrentDim - 1]) {
             throw "Too large index!";
         }
-        Slice(currernt_data_start_ + currentDimIdx*get_this_dimension_width(), dimension_sizes_);
+
+        T &data1 = currernt_data_start_ + currentDimIdx*get_this_dimension_width();
+        return Slice<T, CurrentDim-1>(data1, dimension_sizes_);
     }
 };
 template <class T>
@@ -186,28 +188,20 @@ public:
     }
     //#if 0
     //N-мерная сетка из одного элемента t
-    NDGrid(T const &t, size_type dimensions, ...): data(nullptr), Flattered(1) {
+    NDGrid(T const &t, std::size_t firstDimension, ...) : data(nullptr), Flattered(1) {
+        Dimensions.push_back(firstDimension);
 
         va_list args;
-        va_start(args, dimensions);
-        Dimensions.push_back(dimensions);
-        Flattered *= dimensions;  
-
-        for (int i = 0; i < dim; i++) {
-            Dimensions.push_back(va_arg(args, size_type));
-            Flattered *= Dimensions[i];  
+        va_start(args, firstDimension);
+        for (std::size_t i = 0; i < dim - 1; ++i) {
+            std::size_t size = va_arg(args, std::size_t);
+            Dimensions.push_back(size);
+            Flattered *= size;
         }
-        #if 0
-        for (int i = 0; i < dimensions; i++) {
-            Dimensions.push_back(va_arg(args, size_type));
-            Flattered *= Dimensions[i];  
-        }
-        #endif
-        data = new T[Flattered];
         va_end(args);
-        for (int i = 0; i < Flattered; ++i) {
-            data[i] = t;
-        }
+
+        data = new T[Flattered];
+        std::fill_n(data, Flattered, t);
     }
     //#endif
 
@@ -289,8 +283,8 @@ int main() {
             assert (1.0f == g[y_idx][x_idx]);
 
 
-    NDGrid<float, 2> g(2.0f, 3, 4);
-    assert (2.0f == g2(1, 1));
+    NDGrid<float, 2> g2(2.0f, 3, 4);
+    assert(2.0f == g2(1, 1));
     NDGrid<float, 3> const g3(2, 3, 4, 1.0f);
     assert(1.0f == g3(1, 1, 1));
     g3[1][1][1] = 2;
