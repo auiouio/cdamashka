@@ -1,5 +1,5 @@
 #include <iostream>
-#include <cstdlib> 
+#include <cstdlib>
 #include <iterator>
 #include <set>
 #include <vector>
@@ -9,43 +9,44 @@
 
 template <typename T, typename Comparator = std::less<int>>
 class SkipList {
-    private:
+private:
     Comparator comparator;
     size_t size;
     struct Node {
         int key;
         T value;
         Node** next; // Указатель на массив указателей на следующие узлы
-        //Node** prev;
+        Node** prev; // Указатель на массив указателей на предыдущие узлы
 
         Node(int k, T val, int level) : key(k), value(val) {
             next = new Node*[level + 1];
+            prev = new Node*[level + 1];
             for (int i = 0; i <= level; ++i) {
                 next[i] = nullptr;
+                prev[i] = nullptr;
             }
         }
 
         ~Node() {
             delete[] next;
+            delete[] prev;
         }
     };
 
     float probability; // Вероятность добавления элемента на более высокий уровень
-    int maxLevels; // Максимальное количество уровней
+    int maxLevels;     // Максимальное количество уровней
 
     Node* head;
-    std::multiset<T> elements;
-
+    std::multiset <T> elements;
 
     int getRandomLevel() const {
         int level = 0;
         while (rand() / static_cast<float>(RAND_MAX) < probability && level < maxLevels) {
             level++;
-        } // рандомное число преобразуем в число от 0 до 1, сравниваем с нашей вероятностью
+        }
         return level;
     }
 
-    // функция для копирования узлов
     Node* copyNode(const Node* sourceNode, int levels) {
         if (sourceNode == nullptr) {
             return nullptr;
@@ -54,23 +55,22 @@ class SkipList {
         Node* newNode = new Node(sourceNode->key, sourceNode->value, levels);
         for (int i = 0; i <= levels; ++i) {
             newNode->next[i] = copyNode(sourceNode->next[i], levels - 1);
+            newNode->prev[i] = nullptr; // Устанавливаем prev для скопированных узлов в начальное состояние
         }
 
         return newNode;
     }
-    // Функция удаления узлов
+
     void clear() {
-    while (head != nullptr) {
-        Node* next = head->next[0];
-        delete head;
-        head = next;
-    }
+        while (head != nullptr) {
+            Node* next = head->next[0];
+            delete head;
+            head = next;
+        }
     }
 
-
-    public:
-    // Конструктор по умолчанию
-    SkipList(int maxLvl, float p): size(0), maxLevels(maxLvl), probability(p) {
+public:
+    SkipList(int maxLvl, float p) : size(0), maxLevels(maxLvl), probability(p) {
         head = nullptr;
     };
 
@@ -80,21 +80,15 @@ class SkipList {
             insert(it->key, it->value);
         }
     }
-    // Конструктор копирования
+
     SkipList(const SkipList& other) : probability(other.probability), maxLevels(other.maxLevels), head(nullptr) {
         head = copyNode(other.head, maxLevels - 1);
     }
 
-    // Оператор копирующего присваивания
     SkipList& operator=(const SkipList& other) {
         if (this != &other) {
-            // Освобождаем ресурсы текущего объекта
             clear();
-
-            // Копируем узлы из другого объекта
             head = copyNode(other.head, maxLevels - 1);
-
-            // Копируем остальные данные
             probability = other.probability;
             maxLevels = other.maxLevels;
         }
@@ -105,19 +99,13 @@ class SkipList {
         clear();
     }
 
-    // Оператор перемещения
     SkipList& operator=(SkipList&& other) noexcept {
         if (this != &other) {
-            // Освобождаем ресурсы текущего объекта
             clear();
-
-            // Перемещаем ресурсы из other в текущий объект
             size = other.size;
             probability = other.probability;
             maxLevels = other.maxLevels;
             head = other.head;
-
-            // Обнуляем ресурсы в other
             other.size = 0;
             other.head = nullptr;
         }
@@ -128,7 +116,6 @@ class SkipList {
         return head == nullptr;
     };
 
-    // Метод для получения размера списка
     size_t getSize() const {
         return size;
     }
@@ -138,25 +125,21 @@ class SkipList {
 
         Node* newNode = new Node(key, value, levels);
 
-        // Вставляем новый элемент на каждый уровень списка с пропусками
-        for (int i = levels-1; i >= 0; --i) {
+        for (int i = levels - 1; i >= 0; --i) {
             Node* current = head;
-            while (current->next[i] != nullptr and current->next[i]->key < key) {
+            while (current->next[i] != nullptr && current->next[i]->key < key) {
                 current = current->next[i];
-            };
+            }
 
-            // Обновляем указатель prev у следующего узла
             if (current->next[i] != nullptr) {
                 current->next[i]->prev[i] = newNode;
             }
 
-            // Вставляем новый узел на текущем уровне
             newNode->next[i] = current->next[i];
             newNode->prev[i] = current;
             current->next[i] = newNode;
         }
-        
-        // Обновляем указатель prev у следующего узла на уровне 0
+
         if (newNode->next[0] != nullptr) {
             newNode->next[0]->prev[0] = newNode;
         }
@@ -165,27 +148,19 @@ class SkipList {
         ++size;
     }
 
-
-
-
-
-    // Метод для вставки диапазона итератора 
     template <typename I>
     void insert(I first, I end) {
-
         while (first != end) {
             insert(first->key, first->value);
-            first++;
+            ++first;
         }
     }
 
-    // Определение итератора
     template <typename I>
     class Iterator {
     public:
         Iterator(Node* node) : current(node) {}
 
-        // Операторы сравнения
         bool operator==(const Iterator& other) const {
             return current == other.current;
         }
@@ -194,7 +169,6 @@ class SkipList {
             return !(*this == other);
         }
 
-        // Операторы инкремента и декремента
         Iterator& operator++() {
             if (current) {
                 current = current->next[0];
@@ -209,11 +183,8 @@ class SkipList {
         }
 
         Iterator& operator--() {
-            // Для двунаправленного итератора, если у вас есть указатель на предыдущий узел, вы можете использовать его.
-            // Это потребует дополнительной информации в вашем классе SkipList.
-            // Здесь я предполагаю, что у вас есть указатель на предыдущий узел в классе Node.
-            if (current && current->prev) {
-                current = current->prev;
+            if (current && current->prev[0]) {
+                current = current->prev[0];
             }
             return *this;
         }
@@ -224,25 +195,22 @@ class SkipList {
             return temp;
         }
 
-        // Оператор разыменования
         Node& operator*() const {
             return *current;
         };
 
-        
-
-        private:
+    private:
         Node* current;
-
     };
 
     template <typename I>
     auto reverseIterator(I Iterator) {
         return std::make_reverse_iterator(Iterator);
     };
+
     template <typename I>
     I find(const T& value) const {
-        Iterator it;
+        Iterator<I> it;
         Node* current = head;
 
         for (int i = maxLevels - 1; i >= 0; --i) {
@@ -258,8 +226,6 @@ class SkipList {
         return it(nullptr);
     }
 
-
-    // Метод для подсчета количества вхождений заданного ключа
     size_t count(const int& key) const {
         return elements.count(key);
     }
@@ -269,37 +235,31 @@ class SkipList {
         Node* current = head;
         Node* lastNode = nullptr;
 
-        // Идем по списку вниз
         for (int i = maxLevels - 1; i >= 0; --i) {
             while (current->next[i] != nullptr && comparator(current->next[i]->value, key)) {
                 current = current->next[i];
             }
 
-            // Сохраняем последний узел на текущем уровне, который не превышает key
             if (current->next[i] != nullptr && current->next[i]->value == key) {
                 lastNode = current->next[i];
             }
         }
 
-        // Если найден узел с заданным ключом, возвращаем итератор на него
         if (lastNode != nullptr && lastNode->value == key) {
-            return Iterator(lastNode);
+            return Iterator<I>(lastNode);
         }
 
         if (lastNode == nullptr && current == head) {
-            return Iterator(head);
+            return Iterator<I>(head);
         }
 
-        // Возвращаем итератор на первый элемент не меньше заданного
-        return Iterator(current->next[0]);
+        return Iterator<I>(current->next[0]);
     }
 
     template <typename I>
     I upper_bound(const int& key) const {
-        Iterator lower = lower_bound(key);
+        Iterator<I> lower = lower_bound(key);
 
-        // Если lower_bound вернул итератор на узел с ключом равным key,
-        // увеличиваем итератор, чтобы получить upper_bound
         if (lower != nullptr && lower->value == key) {
             ++lower;
         }
@@ -310,13 +270,11 @@ class SkipList {
     template <typename I>
     void erase(Iterator<I>& it) {
         if (it == nullptr) {
-            // Итератор указывает за конец списка, ничего не удаляем
             return;
         }
 
         Node* nodeToRemove = it.current;
 
-        // Обновляем указатели на следующие узлы перед удалением текущего узла
         for (int i = 0; i <= maxLevels - 1; ++i) {
             Node* current = head;
             while (current->next[i] != nullptr && current->next[i] != nodeToRemove) {
@@ -325,24 +283,22 @@ class SkipList {
 
             if (current->next[i] == nodeToRemove) {
                 current->next[i] = nodeToRemove->next[i];
+                if (nodeToRemove->next[i] != nullptr) {
+                    nodeToRemove->next[i]->prev[i] = current;
+                }
             }
         }
 
-        // Удаляем текущий узел
         delete nodeToRemove;
-
-        // Обновляем итератор, чтобы он указывал на следующий узел после удаленного
-        it = Iterator(nodeToRemove->next[0]);
+        it = Iterator<I>(nodeToRemove->next[0]);
         --size;
     }
 
     template <typename I>
     void erase(I first, I last) {
         while (first != last) {
-            // Сохраняем указатель на следующий узел перед удалением текущего
             Node* nextNode = first.current->next[0];
 
-            // Обновляем указатели на следующие узлы перед удалением текущего узла
             for (int i = 0; i <= maxLevels - 1; ++i) {
                 Node* current = head;
                 while (current->next[i] != nullptr && current->next[i] != first.current) {
@@ -351,71 +307,40 @@ class SkipList {
 
                 if (current->next[i] == first.current) {
                     current->next[i] = first.current->next[i];
+                    if (first.current->next[i] != nullptr) {
+                        first.current->next[i]->prev[i] = current;
+                    }
                 }
             }
 
-            // Удаляем текущий узел
             delete first.current;
-
-            // Переходим к следующему узлу
             first.current = nextNode;
         }
     }
 
-    // Метод для получения промежутка итераторов на элементы с заданным ключом
     template <typename I>
     std::pair<typename std::multiset<I>::iterator, typename std::multiset<T>::iterator> equal_range(const int& key) {
-        // Используем equal_range из std::multiset
         return elements.equal_range(key);
     }
-
 };
 
 int main() {
-    // Инициализация генератора случайных чисел
     std::mt19937 rng(std::time(nullptr));
     std::uniform_real_distribution<float> dist(0.0, 1.0);
 
-    // Настройки тестов
-    const int numTests = 1000;  // Количество тестов
-    const int maxSize = 1000;  // Максимальный размер списка
+    const int numTests = 1000;
+    const int maxSize = 1000;
 
     for (int test = 0; test < numTests; ++test) {
-        // Создание SkipList
         SkipList<int, std::less<int>> skipList(7, 0.5);
 
-        // Вставка элементов
         for (int i = 1; i < 7; ++i) {
             int key = i;
-            int value = i * 2;  // Просто для примера, замените на свои данные
+            int value = i * 2;
             skipList.insert(key, value);
-        };
-
-        /*// Измерение времени вставки
-        auto startInsert = std::chrono::high_resolution_clock::now();
-        // ... ваш код для вставки ...
-        auto endInsert = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> insertDuration = endInsert - startInsert;
-        std::cout << "Insertion time: " << insertDuration.count() << " seconds\n";
-
-        // Измерение времени поиска
-        auto startFind = std::chrono::high_resolution_clock::now();
-        // ... ваш код для поиска ...
-        auto endFind = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> findDuration = endFind - startFind;
-        std::cout << "Find time: " << findDuration.count() << " seconds\n";
-
-        // Измерение времени удаления
-        auto startErase = std::chrono::high_resolution_clock::now();
-        // ... ваш код для удаления ...
-        auto endErase = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> eraseDuration = endErase - startErase;
-        std::cout << "Erase time: " << eraseDuration.count() << " seconds\n";
-
-        // Дополнительные тесты, например, с разными значениями p
-        // ... ваш дополнительный код для тестирования ...   */
-
+        }
 
         return 0;
     }
 }
+
