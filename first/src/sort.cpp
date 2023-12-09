@@ -2,7 +2,8 @@
 #include <vector>
 #include <algorithm>
 #include <random>
-#include "C:\Users\auiod\cdamashka\cdamashka\first\include\my_library.h"
+#include "../include/my_library.h"
+
 
 
 
