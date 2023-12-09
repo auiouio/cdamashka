@@ -73,6 +73,7 @@ public:
     size_type get_x_size() const { return x_size; }
 };
 
+#if 0
 template <class T, size_t CurrentDim, size_t ...OtherDims>
 struct Slice1 {
     T *currernt_data_start;
@@ -99,12 +100,40 @@ struct Slice1 {
         currernt_data_start[currentDimIdx];
     }
 };
+#endif
 
 template <class T, size_t CurrentDim>
 struct Slice {
+    T *currernt_data_start_;
+    const unsigned *dimension_sizes_;
+    Slice(T* data, const unsigned *dimension_sizes): currernt_data_start_(data), dimension_sizes_(dimension_sizes) {
+    }
+    size_t get_this_dimension_width () const {
+        size_t  result = 1;
+        for (size_t i = 1; i < CurrentDim; i++) {
+            result *= dimension_sizes_[i - 1];
+        }
+        return result;
+    }
+    Slice<T,CurrentDim-1>& operator[](size_t currentDimIdx) {
+        if (currentDimIdx >= dimension_sizes_[CurrentDim - 1]) {
+            throw "Too large index!";
+        }
+        Slice(currernt_data_start_ + currentDimIdx*get_this_dimension_width(), dimension_sizes_);
+    }
 };
 template <class T>
 struct Slice<T,1> {
+    T *currernt_data_start_;
+    const unsigned *dimension_sizes_;
+    Slice(T* data, const unsigned *dimension_sizes): currernt_data_start_(data), dimension_sizes_(dimension_sizes) {
+    }
+    T& operator[](size_t currentDimIdx) {
+        if (currentDimIdx >= dimension_sizes_[0]) {
+            throw "Too large index!";
+        }
+        return currernt_data_start_[currentDimIdx];
+    }
 };
     
 
@@ -141,6 +170,13 @@ public:
     std::vector<size_type> Dimensions;
 
     
+    // То же, что выше, но теперь заполняем сетку элементами  t
+    template <typename... Dimensions_tuple>
+    NDGrid(Dimensions_tuple... dims, T const &t) : Dimensions({static_cast<size_type>(dims)...}), data(nullptr) {
+        size_type Flattened = std::apply([](auto... args) { return (args * ...); }, Dimensions);
+        data = new T[Flattened];
+        std::fill_n(data, Flattened, t);
+    }
 
     NDGrid(T *data, size_type *dimensions)
         : data(data), Dimensions(dimensions), Flattered(1) {
@@ -148,20 +184,34 @@ public:
             Flattered *= Dimensions[i];
         }
     }
+    //#if 0
     //N-мерная сетка из одного элемента t
-    NDGrid(T const &t, size_type dimensions, ...): data(new T[1]), Flattered(1) {
-        data[0] = t;
+    NDGrid(T const &t, size_type dimensions, ...): data(nullptr), Flattered(1) {
 
         va_list args;
         va_start(args, dimensions);
+        Dimensions.push_back(dimensions);
+        Flattered *= dimensions;  
+
+        for (int i = 0; i < dim; i++) {
+            Dimensions.push_back(va_arg(args, size_type));
+            Flattered *= Dimensions[i];  
+        }
+        #if 0
         for (int i = 0; i < dimensions; i++) {
             Dimensions.push_back(va_arg(args, size_type));
             Flattered *= Dimensions[i];  
         }
+        #endif
+        data = new T[Flattered];
         va_end(args);
+        for (int i = 0; i < Flattered; ++i) {
+            data[i] = t;
+        }
     }
+    //#endif
 
-
+    #if 0
     // Создаем сетку размера y_size на x_size с элементами, созданными конструктором по умолчанию
     NDGrid(size_t dimensions, ...) {
         va_list args;
@@ -172,14 +222,8 @@ public:
         va_end(args);
         data = new T[Flattered]();
     }
+    #endif
 
-    // То же, что выше, но теперь заполняем сетку элементами  t
-    template <typename... Dimensions_tuple>
-    NDGrid(Dimensions_tuple... dims, T const &t) : Dimensions({static_cast<size_type>(dims)...}), data(nullptr) {
-        size_type Flattened = std::apply([](auto... args) { return (args * ...); }, Dimensions);
-        data = new T[Flattened];
-        std::fill_n(data, Flattened, t);
-    }
 
     template<typename... Indices>
     T& operator()(Indices... indices) const {
@@ -196,8 +240,8 @@ public:
         size_type sliceSize = Flattered / Dimensions[dim - 1];
         return &data[index * sliceSize];
     }//*/
-    T* operator[](size_type index) const {
-        return Slice(data, )
+    Slice<T,dim-1> operator[](size_type index) const {
+        return Slice<T, dim-1>(data, Dimensions.data());
     }
 
 
@@ -207,6 +251,10 @@ public:
         // копирование данных
         std::copy(other, other + Flattered, data);
 
+        return *this;
+    }
+    NDGrid& operator=(const Slice<T,dim> &slice) {
+        std::copy(data, data + Flattered, slice.currernt_data_start_);
         return *this;
     }
 
@@ -241,10 +289,13 @@ int main() {
             assert (1.0f == g[y_idx][x_idx]);
 
 
-    NDGrid<float,2> g2(2, 5, 2.0f);
+    NDGrid<float, 2> g(2.0f, 3, 4);
     assert (2.0f == g2(1, 1));
     NDGrid<float, 3> const g3(2, 3, 4, 1.0f);
     assert(1.0f == g3(1, 1, 1));
+    g3[1][1][1] = 2;
+    assert(2.0f == g3(1, 1, 1));
+    std::cout << "Test done!\n";
 
     g2 = g3[1];
     assert(1.0f == g2(1, 1));
