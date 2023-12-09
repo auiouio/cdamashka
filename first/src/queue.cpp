@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
-#include "C:\Users\auiod\cdamashka\cdamashka\first\include\my_library.h"
+#include "../include/my_library.h"
+
 #include <algorithm>
 #include <utility>  // Для std::pair
 
