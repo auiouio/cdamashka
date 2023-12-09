@@ -19,3 +19,11 @@ jobs:
     - name: Build
       run: cmake --build build
       working-directory: first
+
+    - name: Run src1
+      run: ./build/src1
+      working-directory: first
+
+    - name: Run src2
+      run: ./build/src2
+      working-directory: first
