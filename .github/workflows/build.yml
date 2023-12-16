@@ -27,3 +27,15 @@ jobs:
     - name: Run src2
       run: ./build/src2
       working-directory: first
+
+    - name: Run lab12
+      run: ./build/lab12
+      working-directory: 2sem/2sem/labs
+
+    - name: Run lab11
+      run: ./build/lab11
+      working-directory: 2sem/2sem/labs
+
+    - name: Run lab2
+      run: ./build/lab2
+      working-directory: 2sem/2sem/labs
