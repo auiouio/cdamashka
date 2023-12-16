@@ -2,6 +2,7 @@
 #include <cassert>
 
 
+
 template <typename T>
 class Grid final {
 public:
